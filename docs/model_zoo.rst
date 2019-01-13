@@ -5,7 +5,7 @@ Model Zoo
 
    .. card::
       :title: Word Embedding
-      :link: model_zoo/word_embedding/index.html
+      :link: model_zoo/word_embeddings/index.html
 
       Mapping words to vectors.
 
@@ -34,7 +34,25 @@ Model Zoo
       Classifying polarity of emotions and opinions.
 
    .. card::
+      :title: Parsing 
+      :link: model_zoo/parsing/index.html
+
+      Dependency parsing.
+
+   .. card::
+      :title: Natural Language Inference
+      :link: model_zoo/natural_language_inference/index.html
+
+      Determine if the premise semantically entails the hypothesis.
+
+   .. card::
       :title: Text Generation
       :link: model_zoo/text_generation/index.html
 
       Generating language from models.
+
+   .. card::
+      :title: BERT
+      :link: model_zoo/bert/index.html
+
+      Transfer pre-trained language representations to language understanding tasks.

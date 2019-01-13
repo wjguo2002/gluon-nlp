@@ -21,6 +21,7 @@ from __future__ import print_function
 
 import datetime
 import os
+import io
 import random
 
 from flaky import flaky
@@ -273,6 +274,8 @@ def test_simverb3500():
 @flaky(max_runs=2, min_passes=1)
 @pytest.mark.serial
 @pytest.mark.remote_required
+@pytest.mark.skipif(datetime.date.today() < datetime.date(2018, 12, 10),
+                    reason='Disabled for 1 weeks due to server downtime.')
 def test_semeval17task2():
     for segment, length in [("trial", 18), ("test", 500)]:
         data = nlp.data.SemEval17Task2(
@@ -587,3 +590,51 @@ def test_concatenation():
     assert len(dataset) == 9
     assert dataset[0] == 1
     assert dataset[5] == 6
+
+def test_tsv():
+    data =  "a,b,c\n"
+    data += "d,e,f\n"
+    data += "g,h,i\n"
+    with open('test_tsv.tsv', 'w') as fout:
+        fout.write(data)
+    num_discard = 1
+    field_separator = nlp.data.utils.Splitter(',')
+    field_indices = [0,2]
+    dataset = nlp.data.TSVDataset('test_tsv.tsv', num_discard_samples=num_discard,
+                                  field_separator=field_separator,
+                                  field_indices=field_indices)
+    num_samples = 3 - num_discard
+    idx = random.randint(0, num_samples - 1)
+    assert len(dataset) == num_samples
+    assert len(dataset[0]) == 2
+    assert dataset[1] == [u'g', u'i']
+
+def test_numpy_dataset():
+    a = np.arange(6).reshape((2,3))
+    filename = 'test_numpy_dataset'
+
+    # test npy
+    np.save(filename, a)
+    dataset = nlp.data.NumpyDataset(filename + '.npy')
+    assert dataset.keys is None
+    assert len(dataset) == len(a)
+    assert np.all(dataset[0] == a[0])
+    assert np.all(dataset[1] == a[1])
+
+    # test npz with a single array
+    np.savez(filename, a)
+    dataset = nlp.data.NumpyDataset(filename + '.npz')
+    assert len(dataset) == len(a)
+    assert np.all(dataset[0] == a[0])
+    assert np.all(dataset[1] == a[1])
+
+    # test npz with multiple arrays
+    b = np.arange(16).reshape((2,8))
+    np.savez(filename, a=a, b=b)
+    dataset = nlp.data.NumpyDataset(filename + '.npz')
+    assert dataset.keys == ['a', 'b']
+    assert len(dataset) == len(a)
+    assert np.all(dataset[0][0] == a[0])
+    assert np.all(dataset[1][0] == a[1])
+    assert np.all(dataset[0][1] == b[0])
+    assert np.all(dataset[1][1] == b[1])

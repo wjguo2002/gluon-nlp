@@ -69,7 +69,121 @@ def test_big_text_models(wikitext2_val_and_counter):
 
 @pytest.mark.serial
 @pytest.mark.remote_required
-def test_text_models():
+def test_transformer_models():
+    models = ['transformer_en_de_512']
+    pretrained_to_test = {'transformer_en_de_512': 'WMT2014'}
+    src = mx.nd.ones((2, 10))
+    tgt = mx.nd.ones((2, 8))
+    valid_len = mx.nd.ones((2,))
+    for model_name in models:
+        eprint('testing forward for %s' % model_name)
+        pretrained_dataset = pretrained_to_test.get(model_name)
+        model, _, _ = nlp.model.get_model(model_name, dataset_name=pretrained_dataset,
+                                          pretrained=pretrained_dataset is not None,
+                                          root='tests/data/model/')
+
+        print(model)
+        if not pretrained_dataset:
+            model.initialize()
+        output, state = model(src, tgt, src_valid_length=valid_len, tgt_valid_length=valid_len)
+        output.wait_to_read()
+        del model
+        mx.nd.waitall()
+
+@pytest.mark.serial
+@pytest.mark.remote_required
+def test_pretrained_bert_models():
+    models = ['bert_12_768_12', 'bert_24_1024_16']
+    pretrained = {'bert_12_768_12': ['book_corpus_wiki_en_cased', 'book_corpus_wiki_en_uncased', 'wiki_multilingual','wiki_multilingual_cased','wiki_cn'],
+                  'bert_24_1024_16': ['book_corpus_wiki_en_uncased','book_corpus_wiki_en_cased']}
+    vocab_size = {'book_corpus_wiki_en_cased': 28996,
+                  'book_corpus_wiki_en_uncased': 30522,
+                  'wiki_multilingual_cased': 119547,
+                  'wiki_cn': 21128,
+                  'wiki_multilingual': 105879}
+    special_tokens = ['[UNK]', '[PAD]', '[SEP]', '[CLS]', '[MASK]']
+    ones = mx.nd.ones((2, 10))
+    valid_length = mx.nd.ones((2,))
+    positions = mx.nd.zeros((2, 3))
+    for model_name in models:
+        eprint('testing forward for %s' % model_name)
+        pretrained_datasets = pretrained.get(model_name)
+        for dataset in pretrained_datasets:
+            model, vocab = nlp.model.get_model(model_name, dataset_name=dataset,
+                                               pretrained=True,
+                                               root='tests/data/model/')
+            assert len(vocab) == vocab_size[dataset]
+            for token in special_tokens:
+                assert token in vocab, "Token %s not found in the vocab"%token
+            assert vocab['RandomWordByHaibin'] == 0
+            assert vocab.padding_token == '[PAD]'
+            assert vocab.unknown_token == '[UNK]'
+            assert vocab.bos_token is None
+            assert vocab.eos_token is None
+            output = model(ones, ones, valid_length, positions)
+            output[0].wait_to_read()
+            del model
+            mx.nd.waitall()
+
+@pytest.mark.serial
+@pytest.mark.remote_required
+def test_bert_models():
+    models = ['bert_12_768_12', 'bert_24_1024_16']
+    units = [768, 1024]
+    dataset = 'book_corpus_wiki_en_uncased'
+    vocab_size = 30522
+    batch_size = 2
+    seq_len = 3
+    num_masks = 2
+    ones = mx.nd.ones((batch_size, seq_len))
+    valid_length = mx.nd.ones((batch_size, ))
+    positions = mx.nd.ones((batch_size, num_masks))
+
+    kwargs = [{'use_pooler' : False, 'use_decoder' : False, 'use_classifier' : False},
+              {'use_pooler' : True, 'use_decoder' : False, 'use_classifier' : False},
+              {'use_pooler' : True, 'use_decoder' : True, 'use_classifier' : False},
+              {'use_pooler' : True, 'use_decoder' : True, 'use_classifier' : True}]
+    expected_shapes = [[(batch_size, seq_len, -1)],
+                       [(batch_size, seq_len, -1), (batch_size, -1)],
+                       [(batch_size, seq_len, -1), (batch_size, -1), (batch_size, num_masks, vocab_size)],
+                       [(batch_size, seq_len, -1), (batch_size, -1), (batch_size, 2), (batch_size, num_masks, vocab_size)]
+                      ]
+    def infer_shape(shapes, unit):
+        inferred_shapes = []
+        for shape in shapes:
+            inferred_shape = list(shape)
+            if inferred_shape[-1] == -1:
+                inferred_shape[-1] = unit
+            inferred_shapes.append(tuple(inferred_shape))
+        return inferred_shapes
+
+    def get_shapes(output):
+        if isinstance(output, (list, tuple)):
+            return [out.shape for out in output]
+        return [output.shape]
+
+    for model_name, unit in zip(models, units):
+        eprint('testing forward for %s' % model_name)
+        for kwarg, expected_shape in zip(kwargs, expected_shapes):
+            expected_shape = infer_shape(expected_shape, unit)
+            model, _ = nlp.model.get_model(model_name, dataset_name=dataset,
+                                           pretrained=False, root='tests/data/model/',
+                                           **kwarg)
+            model.initialize()
+            if kwarg['use_decoder']:
+                # position tensor is required for decoding
+                output = model(ones, ones, valid_length, positions)
+            else:
+                output = model(ones, ones, valid_length)
+            out_shapes = get_shapes(output)
+            assert out_shapes == expected_shape, (out_shapes, expected_shape)
+            output[0].wait_to_read()
+            del model
+            mx.nd.waitall()
+
+@pytest.mark.serial
+@pytest.mark.remote_required
+def test_language_models():
     text_models = ['standard_lstm_lm_200', 'standard_lstm_lm_650', 'standard_lstm_lm_1500', 'awd_lstm_lm_1150', 'awd_lstm_lm_600']
     pretrained_to_test = {'standard_lstm_lm_1500': 'wikitext-2',
                           'standard_lstm_lm_650': 'wikitext-2',
@@ -268,12 +382,12 @@ def test_weight_drop():
     shared_net3 = gluon.nn.HybridSequential(params=net3.collect_params())
     shared_net3.add(gluon.rnn.LSTM(10, params=net3[0].collect_params()))
 
-    x = mx.nd.ones((3, 4, 5))
+    x = mx.random.uniform(shape=(3, 4, 5))
     nets = [(net1, shared_net1),
             (net2, shared_net2),
             (net3, shared_net3)]
     for net, shared_net in nets:
-        net.initialize('ones')
+        net.initialize('uniform')
         mx.test_utils.assert_almost_equal(net(x).asnumpy(),
                                           shared_net(x).asnumpy())
         with mx.autograd.train_mode():
@@ -294,10 +408,10 @@ def test_weight_drop():
 
         drop_rate = 0.5
         nlp.model.utils.apply_weight_drop(net, '.*h2h_weight', drop_rate)
-        net.initialize('ones')
 
-        mx.test_utils.assert_almost_equal(net(x).asnumpy(),
-                                          shared_net(x).asnumpy())
+        with mx.autograd.predict_mode():
+            mx.test_utils.assert_almost_equal(net(x).asnumpy(),
+                                              shared_net(x).asnumpy())
         with mx.autograd.train_mode():
             assert not mx.test_utils.almost_equal(net(x).asnumpy(),
                                                   shared_net(x).asnumpy())

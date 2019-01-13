@@ -1,7 +1,7 @@
 # Google Neural Machine Translation
 
 In this notebook, we are going to train Google NMT on IWSLT 2015 English-Vietnamese
-Dataset. The building prcoess includes four steps: 1) load and process dataset, 2)
+Dataset. The building process includes four steps: 1) load and process dataset, 2)
 create sampler and DataLoader, 3) build model, and 4) write training epochs.
 
 ## Load MXNET and Gluon
@@ -296,8 +296,8 @@ encoder, decoder = nmt.gnmt.get_gnmt_encoder_decoder(hidden_size=num_hidden,
                                                      dropout=dropout,
                                                      num_layers=num_layers,
                                                      num_bi_layers=num_bi_layers)
-model = nmt.translation.NMTModel(src_vocab=src_vocab, tgt_vocab=tgt_vocab, encoder=encoder, decoder=decoder,
-                                 embed_size=num_hidden, prefix='gnmt_')
+model = nlp.model.translation.NMTModel(src_vocab=src_vocab, tgt_vocab=tgt_vocab, encoder=encoder,
+                                       decoder=decoder, embed_size=num_hidden, prefix='gnmt_')
 model.initialize(init=mx.init.Uniform(0.1), ctx=ctx)
 static_alloc = True
 model.hybridize(static_alloc=static_alloc)

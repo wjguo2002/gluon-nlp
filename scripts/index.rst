@@ -25,7 +25,7 @@ Model Zoo
       :title: Text Classification
       :link: text_classification/index.html
 
-      Categorize texts and documents.
+      Categorizing documents.
 
    .. card::
       :title: Sentiment Analysis
@@ -34,10 +34,28 @@ Model Zoo
       Classifying polarity of emotions and opinions.
 
    .. card::
+      :title: Parsing 
+      :link: parsing/index.html
+
+      Dependency parsing.
+
+   .. card::
+      :title: Natural Language Inference
+      :link: natural_language_inference/index.html
+
+      Determine if the premise semantically entails the hypothesis.
+
+   .. card::
       :title: Text Generation
       :link: text_generation/index.html
 
-      Generating language from models.
+      Generating text from language models.
+
+   .. card::
+      :title: BERT
+      :link: bert/index.html
+
+      Transfer pre-trained language representations to language understanding tasks.
 
 .. toctree::
    :hidden:
@@ -48,4 +66,7 @@ Model Zoo
    machine_translation/index
    text_classification/index
    sentiment_analysis/index
+   natural_language_inference/index
    text_generation/index
+   parsing/index
+   bert/index

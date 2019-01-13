@@ -24,13 +24,20 @@ from . import loss
 from . import data
 from . import embedding
 from . import model
-from .vocab import *
+from . import utils
+from . import vocab
+from . import optimizer
+from . import initializer
+from .vocab import Vocab
 
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 
 __all__ = ['data',
            'model',
            'embedding',
            'Vocab',
+           'vocab',
            'loss',
-           'initializer']
+           'initializer',
+           'optimizer',
+           'utils']

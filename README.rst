@@ -1,6 +1,6 @@
 .. raw:: html
 
-   <a href="http://gluon-nlp.mxnet.io/master/index.html"><p align="center"><img width="25%" src="docs/_static/gluon_s2.png" /></a>
+   <a href="http://gluon-nlp.mxnet.io/master/index.html"><p align="center"><img width="25%" src="https://github.com/dmlc/gluon-nlp/raw/be3bc8852155e935d68d397e0743715c54c3ce76/docs/_static/gluon_s2.png" /></a>
    </p>
 
 .. raw:: html
@@ -31,6 +31,7 @@ News
 ====
 
 - GluonNLP is featured in:
+
   - **AWS re:invent 2018 in Las Vegas, 2018-11-28**! Checkout `details <https://www.portal.reinvent.awsevents.com/connect/sessionDetail.ww?SESSION_ID=88736>`_.
   - **KDD 2018 London, 2018-08-21, Apache MXNet Gluon tutorial**! Check out **https://kdd18.mxnet.io**.
 
@@ -106,8 +107,8 @@ For experienced users, check out our
 Quick Start Guide
 =================
 
-`Dataset Loading <http://gluon-nlp.mxnet.io/master/api/data.html>`__
--------------------------------------------------------------------------------------
+`Dataset Loading <http://gluon-nlp.mxnet.io/master/api/notes/data_api.html>`__
+-------------------------------------------------------------------------------
 
 Load the Wikitext-2 dataset, for example:
 
@@ -118,8 +119,8 @@ Load the Wikitext-2 dataset, for example:
     >>> train[0][0:5]
     ['=', 'Valkyria', 'Chronicles', 'III', '=']
 
-`Vocabulary Construction <http://gluon-nlp.mxnet.io/master/api/vocab.html>`__
----------------------------------------------------------------------------------
+`Vocabulary Construction <http://gluon-nlp.mxnet.io/master/api/modules/vocab.html>`__
+-------------------------------------------------------------------------------------
 
 Build vocabulary based on the above dataset, for example:
 
@@ -129,8 +130,8 @@ Build vocabulary based on the above dataset, for example:
     >>> vocab
     Vocab(size=33280, unk="<unk>", reserved="['<pad>', '<bos>', '<eos>']")
 
-`Neural Models Building <http://gluon-nlp.mxnet.io/master/api/model.html>`__
------------------------------------------------------------------------------------
+`Neural Models Building <http://gluon-nlp.mxnet.io/master/api/modules/model.html>`__
+------------------------------------------------------------------------------------
 
 From the models package, apply a Standard RNN language model to the
 above dataset:
@@ -151,8 +152,8 @@ above dataset:
       )
     )
 
-`Word Embeddings Loading <http://gluon-nlp.mxnet.io/master/api/embedding.html>`__
----------------------------------------------------------------------------------
+`Word Embeddings Loading <http://gluon-nlp.mxnet.io/master/api/modules/embedding.html>`__
+-----------------------------------------------------------------------------------------
 
 For example, load a GloVe word embedding, one of the state-of-the-art
 English word embeddings:
@@ -165,3 +166,9 @@ English word embeddings:
     <class 'mxnet.ndarray.ndarray.NDArray'>
     >>> glove['baby'].shape
     (50,)
+
+
+New to Deep Learning or NLP?
+============================
+
+For background knowledge of deep learning or NLP, please refer to the open source book `Dive into Deep Learning <http://en.diveintodeeplearning.org/>`__.

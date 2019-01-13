@@ -125,7 +125,7 @@ language = None
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = '_static/gluon_black.png'
+html_logo = '_static/gluon-logo.svg'
 
 # The name of an image file (relative to this directory) to use as a favicon of
 # the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -186,7 +186,7 @@ html_theme_options = {
         ('API', 'api/index', False, ''),
         ('Community', 'community/index', False, ''),
         ('Contribute', 'community/contribute', False, ''),
-        ('GitHub', 'https://github.com/dmlc/gluon-nlp/', True, ''),
+        ('GitHub', 'https://github.com/dmlc/gluon-nlp/', True, 'fab fa-github'),
     ],
 
     # custom layout
@@ -245,9 +245,7 @@ def setup(app):
         'auto_doc_ref': True
             }, True)
     app.add_transform(AutoStructify)
-    app.add_javascript('copybutton.js')
     app.add_javascript('google_analytics.js')
-    app.add_javascript('demo.js')
 
 
 sphinx_gallery_conf = {
