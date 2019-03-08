@@ -310,13 +310,13 @@ def bilinear(x, W, y, input_size, seq_len, batch_size, num_outputs=1, bias_x=Fal
     # W: (num_outputs x ny) x nx
     lin = nd.dot(W, x)
     if num_outputs > 1:
-        lin = reshape_fortran(lin, (ny, num_outputs * seq_len, batch_size))
+        lin = lin.reshape((ny, num_outputs * seq_len, batch_size))
     y = y.transpose([2, 1, 0])  # May cause performance issues
     lin = lin.transpose([2, 1, 0])
     blin = nd.batch_dot(lin, y, transpose_b=True)
     blin = blin.transpose([2, 1, 0])
     if num_outputs > 1:
-        blin = reshape_fortran(blin, (seq_len, num_outputs, seq_len, batch_size))
+        blin = blin.reshape((seq_len, num_outputs, seq_len, batch_size))
     return blin
 
 

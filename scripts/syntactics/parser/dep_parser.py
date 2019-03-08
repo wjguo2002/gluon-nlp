@@ -158,13 +158,13 @@ class DepParser(object):
             bar = Progbar(target=min(validate_every, data_loader.samples))
             while global_step < train_iters:
                 for words, tags, arcs, rels in data_loader.get_batches(batch_size=train_batch_size,
-                                                                       shuffle=True):
+                                                                       shuffle=False):
                     with autograd.record():
                         arc_accuracy, rel_accuracy, overall_accuracy, loss = parser.forward(words, tags, arcs,
                                                                                             rels)
                         loss_value = loss.asscalar()
                     loss.backward()
-                    trainer.step(train_batch_size)
+                    trainer.step(train_batch_size, ignore_stale_grad=True)
                     batch_id += 1
                     try:
                         bar.update(batch_id,
@@ -299,9 +299,9 @@ if __name__ == '__main__':
                  test_file='tests/data/biaffine/ptb/test.conllx', save_dir='tests/data/biaffine/model',
                  pretrained_embeddings=('glove', 'glove.6B.100d'))
     parser.load('tests/data/biaffine/model')
-    # parser.evaluate(test_file='tests/data/biaffine/ptb/test-debug.conllx', save_dir='tests/data/biaffine/model',
-    #                 num_buckets_test=4)
-    parser.evaluate(test_file='tests/data/biaffine/ptb/test.conllx', save_dir='tests/data/biaffine/model')
+    parser.evaluate(test_file='tests/data/biaffine/ptb/test-debug.conllx', save_dir='tests/data/biaffine/model',
+                    num_buckets_test=4)
+    # parser.evaluate(test_file='tests/data/biaffine/ptb/test.conllx', save_dir='tests/data/biaffine/model')
     sentence = [('Is', 'VBZ'), ('this', 'DT'), ('the', 'DT'), ('future', 'NN'), ('of', 'IN'), ('chamber', 'NN'),
                 ('music', 'NN'), ('?', '.')]
     print(parser.parse(sentence))

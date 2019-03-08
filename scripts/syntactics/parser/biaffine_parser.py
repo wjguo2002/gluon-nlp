@@ -193,7 +193,7 @@ class BiaffineParser(nn.Block):
                 A column vector
 
             """
-            return np.reshape(ndarray, (-1,), 'F')
+            return np.reshape(ndarray, (-1,), 'C')
 
         batch_size = word_inputs.shape[1]
         seq_len = word_inputs.shape[0]
@@ -231,7 +231,7 @@ class BiaffineParser(nn.Block):
                               bias_x=True, bias_y=False)
         # (#head x #dep) x batch_size
 
-        flat_arc_logits = reshape_fortran(arc_logits, (seq_len, seq_len * batch_size))
+        flat_arc_logits = arc_logits.reshape((seq_len, seq_len * batch_size))
         # (#head ) x (#dep x batch_size)
 
         arc_preds = arc_logits.argmax(0)
@@ -247,7 +247,7 @@ class BiaffineParser(nn.Block):
 
         if not is_train:
             arc_probs = np.transpose(
-                np.reshape(nd.softmax(flat_arc_logits, axis=0).asnumpy(), (seq_len, seq_len, batch_size), 'F'))
+                np.reshape(nd.softmax(flat_arc_logits, axis=0).asnumpy(), (seq_len, seq_len, batch_size)))
         # #batch_size x #dep x #head
 
         W_rel = self.rel_W.data()
@@ -255,14 +255,15 @@ class BiaffineParser(nn.Block):
                               num_outputs=self._vocab.rel_size, bias_x=True, bias_y=True)
         # (#head x rel_size x #dep) x batch_size
 
-        flat_rel_logits = reshape_fortran(rel_logits, (seq_len, self._vocab.rel_size, seq_len * batch_size))
+        flat_rel_logits = rel_logits.reshape((seq_len, self._vocab.rel_size, seq_len * batch_size))
         # (#head x rel_size) x (#dep x batch_size)
 
-        _target_vec = nd.array(targets_1D if is_train else flatten_numpy(arc_preds.asnumpy())).reshape(
-            seq_len * batch_size, 1)
-        _target_mat = _target_vec * nd.ones((1, self._vocab.rel_size))
+        # seq_len x batch_size
+        _target_vec = nd.array(targets_1D if is_train else arc_preds.asnumpy()).reshape(
+            1, seq_len * batch_size)
+        _target_mat = nd.ones((self._vocab.rel_size, 1)) * _target_vec
 
-        partial_rel_logits = nd.pick(flat_rel_logits, _target_mat.T, axis=0)
+        partial_rel_logits = nd.pick(flat_rel_logits, _target_mat, axis=0)
         # (rel_size) x (#dep x batch_size)
 
         if is_train or arc_targets is not None:
@@ -275,7 +276,7 @@ class BiaffineParser(nn.Block):
 
         if not is_train:
             rel_probs = np.transpose(np.reshape(nd.softmax(flat_rel_logits.transpose([1, 0, 2]), axis=0).asnumpy(),
-                                                (self._vocab.rel_size, seq_len, seq_len, batch_size), 'F'))
+                                                (self._vocab.rel_size, seq_len, seq_len, batch_size)))
         # batch_size x #dep x #head x #nclasses
 
         if is_train or arc_targets is not None:
