@@ -18,28 +18,5 @@
 # under the License.
 
 # pylint: disable=wildcard-import
-"""NLP toolkit."""
-
-from . import loss
-from . import data
-from . import embedding
-from . import model
-from . import metric
-from . import utils
-from . import vocab
-from . import optimizer
-from . import initializer
-from .vocab import Vocab
-
-__version__ = '0.6.0'
-
-__all__ = ['data',
-           'model',
-           'embedding',
-           'Vocab',
-           'vocab',
-           'loss',
-           'initializer',
-           'optimizer',
-           'utils',
-           'metric']
+"""static BERT example."""
+from . import static_bert, static_bert_qa_model
